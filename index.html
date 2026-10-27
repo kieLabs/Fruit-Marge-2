@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Fruit Merge — Cute Fruit Puzzle</title>
+
+<style>
+:root {
+  --cream: #e8dfc3;
+  --brown: #bd956d;
+  --dark: #452516;
+  --outline: #402012;
+  --yellow: #ffcc45;
+}
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  color: var(--dark);
+  background: #d9d0b2;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+button { font: inherit; cursor: pointer; }
+
+#game {
+  width: min(100vw, 540px);
+  height: 100dvh;
+  min-height: 520px;
+  position: relative;
+  overflow: hidden;
+  background: var(--brown);
+  border-left: 5px solid #eee4c8;
+  border-right: 5px solid #eee4c8;
+}
+
+#topbar {
+  height: 66px;
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 9px 12px;
+  pointer-events: none;
+}
+
+#topbar > * { pointer-events: auto; }
+
+.ui-btn {
+  border: 3px solid #fff5d7;
+  border-radius: 15px;
+  color: #62371e;
+  background: #ffcb48;
+  box-shadow: 0 4px 0 #98602c;
+  padding: 8px 12px;
+  font-weight: 900;
+}
+
+#scorebox {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 6px;
+  min-width: 112px;
+  text-align: center;
+  border: 3px solid #fff6dc;
+  border-radius: 22px;
+  background: #fff3cf;
+  box-shadow: 0 4px 0 #b48b55;
+  padding: 3px 12px;
+}
+
+#scorebox small {
+  display: block;
+  font-weight: 900;
+  font-size: 11px;
+}
+
+#score {
+  font-weight: 1000;
+  font-size: 25px;
+  line-height: 27px;
+}
+
+#nextbox {
+  background: #fff3cf;
+  border: 3px solid white;
+  border-radius: 15px;
+  padding: 3px 7px;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+#nextFruit { display: block; width: 35px; height: 35px; margin: auto; }
+
+#playfield {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 58%;
+  background: #ded4b4;
+  border-bottom: 8px solid #f9edca;
+  box-shadow: inset 0 -5px 0 #aa8057;
+  overflow: hidden;
+}
+
+#canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+#lower {
+  position: absolute;
+  top: 58%;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #bd956d;
+}
+
+#shelf {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 16%;
+  min-height: 75px;
+  background: #ffdf9c;
+  border: 5px solid #f5c987;
+  border-radius: 28px;
+  box-shadow: 0 5px 0 #956b43, inset 0 2px 4px #fff0c8;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 5px;
+}
+
+.shelf-fruit {
+  width: 9%;
+  min-width: 24px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shelf-fruit canvas { width: 100%; max-width: 39px; }
+
+#guide {
+  position: absolute;
+  top: 38%;
+  width: 100%;
+  text-align: center;
+  padding: 0 15px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff5d5;
+  text-shadow: 0 2px 2px #805638;
+}
+
+#controls {
+  position: absolute;
+  top: 48%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  padding: 0 10px;
+}
+
+.control-btn {
+  background: #fff2c9;
+  border: 3px solid white;
+  border-radius: 15px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 0 #90633e;
+  font-weight: 900;
+  color: #61381f;
+}
+
+#overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(58, 37, 20, .62);
+}
+
+#panel {
+  width: 100%;
+  max-width: 350px;
+  background: #fff2cc;
+  border: 5px solid #fff9e8;
+  border-radius: 27px;
+  box-shadow: 0 8px 0 #87552e;
+  padding: 25px 20px;
+  text-align: center;
+}
+
+#panel h1 { margin: 0 0 6px; font-size: 32px; }
+#panel p { line-height: 1.5; }
+
+.primary {
+  background: #7bd64a;
+  border: 4px solid white;
+  border-radius: 17px;
+  padding: 13px 22px;
+  font-size: 19px;
+  font-weight: 1000;
+  color: #244a17;
+  box-shadow: 0 5px 0 #478e2b;
+  margin: 6px;
+}
+
+.secondary {
+  background: #ffcf55;
+  border: 3px solid white;
+  border-radius: 13px;
+  padding: 9px 13px;
+  margin: 4px;
+  font-weight: 900;
+}
+
+.hidden { display: none !important; }
+
+#settings {
+  margin-top: 14px;
+  border-top: 2px dashed #d3b887;
+  padding-top: 10px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 0;
+  font-weight: 900;
+}
+
+#toast {
+  position: absolute;
+  z-index: 10;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff3cf;
+  border: 3px solid white;
+  border-radius: 20px;
+  padding: 9px 16px;
+  font-weight: 1000;
+  box-shadow: 0 4px 0 #97683f;
+  display: none;
+  white-space: nowrap;
+}
+
+@media(max-height:650px) {
+  #playfield { height: 62%; }
+  #lower { top: 62%; }
+  #shelf { top: 8%; min-height: 58px; }
+  #guide { top: 33%; }
+  #controls { top: 48%; }
+}
+</style>
+</head>
+
+<body>
+<div id="game">
+
+  <div id="playfield">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <div id="topbar">
+    <button class="ui-btn" id="settingsBtn" aria-label="Settings">⚙️</button>
+
+    <div id="scorebox">
+      <small>🏆 BEST <span id="best">0</span></small>
+      <div id="score">0</div>
+    </div>
+
+    <div id="nextbox">
+      NEXT
+      <canvas id="nextFruit" width="70" height="70"></canvas>
+    </div>
+  </div>
+
+  <div id="lower">
+    <div id="shelf"></div>
+    <div id="guide">DROP • MERGE • GROW 🍉</div>
+    <div id="controls">
+      <button class="control-btn" id="restart">↻ Restart</button>
+      <button class="control-btn" id="soundBtn">🔊 Sound ON</button>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="overlay">
+    <div id="panel">
+      <div style="font-size:48px">🍒🍇🍎</div>
+      <h1 id="panelTitle">FRUIT MERGE</h1>
+      <p id="panelText">
+        Drop matching fruits together and create bigger fruits!
+        Can you make a Watermelon?
+      </p>
+
+      <button class="primary" id="playBtn">▶ PLAY NOW</button>
+      <button class="secondary" id="openSettings">⚙ SETTINGS</button>
+
+      <div id="settings" class="hidden">
+        <div class="setting-row">
+          <span>🔊 Sound effects</span>
+          <button class="secondary" id="effectsToggle">ON</button>
+        </div>
+        <div class="setting-row">
+          <span>🎵 Background music</span>
+          <button class="secondary" id="musicToggle">OFF</button>
+        </div>
+        <p style="font-size:12px">Music starts after you press Play.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+const $ = id => document.getElementById(id);
+const canvas = $('canvas');
+const ctx = canvas.getContext('2d');
+const nextCanvas = $('nextFruit');
+const nextCtx = nextCanvas.getContext('2d');
+const field = $('playfield');
+
+const FRUITS = [
+  {name:'Cherry', color:'#e33c48', r:15, points:1, kind:'cherry'},
+  {name:'Blueberry', color:'#6588d5', r:20, points:2, kind:'berry'},
+  {name:'Lime', color:'#d0e638', r:24, points:3, kind:'lime'},
+  {name:'Grape', color:'#934bdc', r:29, points:4, kind:'grape'},
+  {name:'Orange', color:'#ff9e36', r:34, points:5, kind:'orange'},
+  {name:'Apple', color:'#69c934', r:40, points:6, kind:'apple'},
+  {name:'Peach', color:'#ff91ac', r:47, points:7, kind:'peach'},
+  {name:'Coconut', color:'#795037', r:53, points:10, kind:'coconut'},
+  {name:'Dragon Fruit', color:'#f52f69', r:60, points:15, kind:'dragon'},
+  {name:'Pineapple', color:'#ffc73c', r:68, points:20, kind:'pineapple'},
+  {name:'Watermelon', color:'#36b94f', r:78, points:30, kind:'watermelon'}
+];
+
+let W=0, H=0, dpr=1;
+let fruits=[], particles=[];
+let score=0, best=Number(localStorage.getItem('cuteFruitBest')||0);
+let current=0, next=0;
+let running=false, over=false, aiming=false, dropLock=false;
+let aimX=100, lastTime=0;
+let effectsOn=true, musicOn=false, audio=null, musicTimer=null;
+let mergePairs=new Set();
+
+$('best').textContent=best;
+
+function randTier() {
+  return Math.floor(Math.random()*4);
+}
+
+function radius(t) {
+  const scale=Math.min(W/360, 1.05);
+  return FRUITS[t].r*scale;
+}
+
+function resize() {
+  const r=field.getBoundingClientRect();
+  dpr=Math.min(devicePixelRatio||1,2);
+  W=r.width;
+  H=r.height;
+  canvas.width=Math.round(W*dpr);
+  canvas.height=Math.round(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  aimX=Math.max(25,Math.min(W-25,aimX||W/2));
+  draw();
+}
+window.addEventListener('resize',resize);
+
+function roundedRect(c,x,y,w,h,r) {
+  c.beginPath();
+  c.roundRect(x,y,w,h,r);
+}
+
+function drawFruit(c,t,r,angle=0) {
+  const f=FRUITS[t];
+  c.save();
+  c.rotate(angle);
+
+  if(f.kind==='grape') {
+    const offsets=[
+      [-.48,-.25],[0,-.38],[.48,-.25],
+      [-.55,.18],[-.18,.22],[.20,.22],[.53,.16],
+      [-.28,.57],[.15,.57]
+    ];
+    for(const [x,y] of offsets) {
+      c.beginPath();
+      c.arc(x*r,y*r,r*.36,0,Math.PI*2);
+      c.fillStyle=f.color;
+      c.fill();
+      c.strokeStyle='#402012';
+      c.lineWidth=Math.max(1.7,r*.07);
+      c.stroke();
+      c.beginPath();
+      c.arc((x-.09)*r,(y-.10)*r,r*.10,0,Math.PI*2);
+      c.fillStyle='rgba(255,255,255,.38)';
+      c.fill();
+    }
+  } else if(f.kind==='cherry') {
+    c.strokeStyle='#49301b';
+    c.lineWidth=Math.max(2,r*.12);
+    c.beginPath();
+    c.moveTo(-r*.15,-r*.55);
+    c.quadraticCurveTo(-r*.45,-r*1.05,-r*.18,-r*1.25);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(-r*.1,-r*.8);
+    c.quadraticCurveTo(r*.6,-r*1.15,r*.55,-r*.7);
+    c.quadraticCurveTo(r*.1,-r*.48,-r*.1,-r*.8);
+    c.fillStyle='#55b83d';
+    c.fill();
+    c.stroke();
+    c.beginPath();
+    c.arc(0,0,r*.87,0,Math.PI*2);
+    c.fillStyle=f.color;
+    c.fill();
+    c.stroke();
+  } else if(f.kind==='peach') {
+    c.beginPath();
+    c.moveTo(0,-r*.98);
+    c.bezierCurveTo(r*.9,-r*.9,r*1.1,r*.4,0,r*.95);
+    c.bezierCurveTo(-r*1.1,r*.4,-r*.9,-r*.9,0,-r*.98);
+    c.fillStyle=f.color;
+    c.fill();
+    c.stroke();
+    c.beginPath();
+    c.moveTo(0,-r*.7);
+    c.quadraticCurveTo(-r*.12,0,0,r*.65);
+    c.strokeStyle='#e86c91';
+    c.lineWidth=Math.max(1,r*.045);
+    c.stroke();
+  } else if(f.kind==='pineapple') {
+    c.fillStyle='#52a83b';
+    c.strokeStyle='#402012';
+    c.lineWidth=Math.max(1.5,r*.07);
+    for(let i=-2;i<=2;i++) {
+      c.beginPath();
+      c.moveTo(i*r*.13,-r*.65);
+      c.lineTo(i*r*.20,-r*1.35);
+      c.lineTo(i*r*.42,-r*.86);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+    c.beginPath();
+    c.ellipse(0,0,r*.78,r*.95,0,0,Math.PI*2);
+    c.fillStyle=f.color;
+    c.fill();
+    c.stroke();
+    c.save();
+    c.clip();
+    c.strokeStyle='#d79520';
+    c.lineWidth=Math.max(1,r*.045);
+    for(let i=-3;i<=3;i++) {
+      c.beginPath();
+      c.moveTo(-r,i*r*.28);
+      c.lineTo(r,i*r*.28+r*.35);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(i*r*.28,-r);
+      c.lineTo(i*r*.28+r*.2,r);
+      c.stroke();
+    }
+    c.restore();
+  } else if(f.kind==='watermelon') {
+    c.beginPath();
+    c.arc(0,0,r,0,Math.PI*2);
+    c.fillStyle=f.color;
+    c.fill();
+    c.stroke();
+    c.save();
+    c.clip();
+    for(let i=-3;i<=3;i++) {
+      c.beginPath();
+      c.moveTo(i*r*.34,-r);
+      c.quadraticCurveTo(i*r*.60,0,i*r*.34,r);
+      c.strokeStyle='#16843b';
+      c.lineWidth=r*.12;
+      c.stroke();
+    }
+    c.restore();
+  } else {
+    c.beginPath();
+    if(f.kind==='apple') {
+      c.moveTo(0,-r*.72);
+      c.bezierCurveTo(-r*.55,-r*1.18,-r*1.2,-r*.45,-r*.92,r*.35);
+      c.bezierCurveTo(-r*.7,r*1.12,-r*.15,r*.98,0,r*.87);
+      c.bezierCurveTo(r*.3,r*1.08,r*.95,r*.75,r*.98,r*.08);
+      c.bezierCurveTo(r*1.15,-r*.7,r*.4,-r*1.02,0,-r*.72);
+    } else {
+      c.arc(0,0,r*.94,0,Math.PI*2);
+    }
+    c.fillStyle=f.color;
+    c.fill();
+    c.stroke();
+
+    if(f.kind==='orange') {
+      c.beginPath();
+      c.ellipse(r*.08,-r*.96,r*.18,r*.08,0,0,Math.PI*2);
+      c.fillStyle='#4c9638';
+      c.fill();
+      c.stroke();
+    }
+    if(f.kind==='coconut') {
+      c.save();
+      c.clip();
+      c.strokeStyle='#a9825d';
+      c.lineWidth=r*.045;
+      for(let i=-2;i<=2;i++) {
+        c.beginPath();
+        c.moveTo(i*r*.38,-r);
+        c.lineTo(i*r*.25,r);
+        c.stroke();
+      }
+      c.restore();
+    }
+  }
+
+  // Glossy highlight
+  c.beginPath();
+  c.ellipse(-r*.35,-r*.42,r*.15,r*.27,-.55,0,Math.PI*2);
+  c.fillStyle='rgba(255,255,255,.55)';
+  c.fill();
+
+  // Cute face
+  const eyeY=r*.03;
+  const eyeX=r*.31;
+  const eyeR=Math.max(2,r*.105);
+
+  c.fillStyle='#35190f';
+  for(const x of [-eyeX,eyeX]) {
+    c.beginPath();
+    c.arc(x,eyeY,eyeR,0,Math.PI*2);
+    c.fill();
+    c.beginPath();
+    c.arc(x-eyeR*.25,eyeY-eyeR*.25,eyeR*.25,0,Math.PI*2);
+    c.fillStyle='#fff';
+    c.fill();
+    c.fillStyle='#35190f';
+  }
+
+  // Blush
+  c.fillStyle='rgba(255,100,130,.48)';
+  for(const x of [-r*.56,r*.56]) {
+    c.beginPath();
+    c.ellipse(x,r*.28,r*.13,r*.075,0,0,Math.PI*2);
+    c.fill();
+  }
+
+  // Smile
+  c.beginPath();
+  c.arc(0,r*.19,r*.20,.15,Math.PI-.15);
+  c.lineWidth=Math.max(1.5,r*.065);
+  c.strokeStyle='#35190f';
+  c.stroke();
+
+  if(r>25) {
+    c.beginPath();
+    c.arc(0,r*.20,r*.12,0,Math.PI);
+    c.fillStyle='#ffb0bb';
+    c.fill();
+  }
+
+  c.restore();
+}
+
+function drawShelf() {
+  const shelf=$('shelf');
+  if(shelf.childElementCount) return;
+
+  FRUITS.forEach((f,i)=>{
+    const wrap=document.createElement('div');
+    wrap.className='shelf-fruit';
+    const c=document.createElement('canvas');
+    c.width=80;c.height=80;
+    const cx=c.getContext('2d');
+    cx.translate(40,42);
+    drawFruit(cx,i,27);
+    wrap.appendChild(c);
+    shelf.appendChild(wrap);
+  });
+}
+
+function draw() {
+  if(!W||!H) return;
+  ctx.clearRect(0,0,W,H);
+
+  // Drop guide and held fruit
+  if(running&&!over&&!dropLock) {
+    const r=radius(current);
+    ctx.save();
+    ctx.setLineDash([5,7]);
+    ctx.strokeStyle='rgba(255,255,255,.72)';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(aimX,48);
+    ctx.lineTo(aimX,H);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(aimX,48);
+    drawFruit(ctx,current,r);
+    ctx.restore();
+  }
+
+  // Fruits
+  for(const f of fruits) {
+    ctx.save();
+    ctx.translate(f.x,f.y);
+    drawFruit(ctx,f.t,f.r,f.angle);
+    ctx.restore();
+  }
+
+  // Merge particles
+  for(const p of particles) {
+    ctx.globalAlpha=Math.max(0,p.life);
+    ctx.fillStyle=p.color;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha=1;
+  }
+}
+
+function makeFruit(t,x,y) {
+  return {
+    id:Math.random().toString(36).slice(2),
+    t,x,y,
+    r:radius(t),
+    vx:0,vy:0,angle:Math.random()*.3,
+    av:(Math.random()-.5)*.025,
+    age:0,
+    merging:false
+  };
+}
+
+function addFruit(t,x,y) {
+  const f=makeFruit(t,x,y);
+  fruits.push(f);
+  return f;
+}
+
+function updateScore(n) {
+  score+=n;
+  $('score').textContent=score;
+  if(score>best) {
+    best=score;
+    $('best').textContent=best;
+    localStorage.setItem('cuteFruitBest',String(best));
+  }
+}
+
+function burst(x,y,color) {
+  for(let i=0;i<12;i++) {
+    particles.push({
+      x,y,
+      vx:(Math.random()-.5)*5,
+      vy:(Math.random()-.7)*5,
+      r:2+Math.random()*3,
+      color,life:1
+    });
+  }
+}
+
+function toast(msg) {
+  const t=$('toast');
+  t.textContent=msg;
+  t.style.display='block';
+  clearTimeout(toast.timer);
+  toast.timer=setTimeout(()=>t.style.display='none',1300);
+}
+
+function sound(type) {
+  if(!effectsOn) return;
+  try {
+    audio=audio||new (window.AudioContext||window.webkitAudioContext)();
+    if(audio.state==='suspended') audio.resume();
+    const osc=audio.createOscillator();
+    const gain=audio.createGain();
+    const now=audio.currentTime;
+    const notes={drop:210,merge:560,win:880,over:120};
+    osc.type=type==='drop'?'sine':'triangle';
+    osc.frequency.setValueAtTime(notes[type]||440,now);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(50,(notes[type]||440)*.55),now+.16);
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(.12,now+.015);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+.2);
+    osc.connect(gain);gain.connect(audio.destination);
+    osc.start(now);osc.stop(now+.21);
+  } catch(e) {}
+}
+
+function musicStart() {
+  musicStop();
+  if(!musicOn) return;
+  // A quiet repeating melody made with Web Audio.
+  const playNote=(freq,duration)=>{
+    if(!musicOn) return;
+    try {
+      audio=audio||new (window.AudioContext||window.webkitAudioContext)();
+      if(audio.state==='suspended') audio.resume();
+      const o=audio.createOscillator();
+      const g=audio.createGain();
+      o.type='sine';
+      o.frequency.value=freq;
+      g.gain.value=.018;
+      o.connect(g);g.connect(audio.destination);
+      o.start();
+      g.gain.setTargetAtTime(.0001,audio.currentTime+duration-.1,.05);
+      o.stop(audio.currentTime+duration);
+    } catch(e) {}
+  };
+  let i=0;
+  const notes=[523,659,784,659,587,698,784,523];
+  musicTimer=setInterval(()=>{
+    if(musicOn&&running) playNote(notes[i++%notes.length],.3);
+  },380);
+}
+
+function musicStop() {
+  if(musicTimer) clearInterval(musicTimer);
+  musicTimer=null;
+}
+
+function update() {
+  if(!running||over) return;
+
+  const dt=1/60;
+  const gravity=1250;
+  const floor=H-4;
+
+  // Gravity and rolling
+  for(const f of fruits) {
+    if(f.merging) continue;
+    f.age+=dt;
+    f.vy+=gravity*dt;
+    f.x+=f.vx*dt;
+    f.y+=f.vy*dt;
+    f.angle+=f.av;
+
+    const minX=f.r+2;
+    const maxX=W-f.r-2;
+
+    if(f.x<minX) {
+      f.x=minX;
+      f.vx=Math.abs(f.vx)*.38;
+      f.av+=.025;
+    }
+    if(f.x>maxX) {
+      f.x=maxX;
+      f.vx=-Math.abs(f.vx)*.38;
+      f.av-=.025;
+    }
+    if(f.y+f.r>floor) {
+      f.y=floor-f.r;
+      if(f.vy>45) f.vy=-f.vy*.16;
+      else f.vy=0;
+      f.vx*=.985;
+      f.av+=f.vx*.0007;
+    }
+  }
+
+  // Pair collision and equal-fruit merging.
+  // A pair can only merge once.
+  for(let i=0;i<fruits.length;i++) {
+    const a=fruits[i];
+    if(a.merging) continue;
+
+    for(let j=i+1;j<fruits.length;j++) {
+      const b=fruits[j];
+      if(b.merging) continue;
+
+      const dx=b.x-a.x,dy=b.y-a.y;
+      const dist=Math.hypot(dx,dy)||.001;
+      const minDist=a.r+b.r;
+
+      if(dist>=minDist) continue;
+
+      const nx=dx/dist,ny=dy/dist;
+      const overlap=minDist-dist;
+
+      // Separate overlapping fruits
+      a.x-=nx*overlap*.5;
+      a.y-=ny*overlap*.5;
+      b.x+=nx*overlap*.5;
+      b.y+=ny*overlap*.5;
+
+      // Gentle bounce response
+      const rel=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
+      if(rel<0) {
+        const impulse=-rel*.32;
+        a.vx-=impulse*nx;
+        a.vy-=impulse*ny;
+        b.vx+=impulse*nx;
+        b.vy+=impulse*ny;
+      }
+
+      // Merge matching fruits
+      if(a.t===b.t) {
+        a.merging=true;
+        b.merging=true;
+        mergePair(a,b);
+        break;
+      }
+    }
+  }
+
+  // Update effects
+  for(let i=particles.length-1;i>=0;i--) {
+    const p=particles[i];
+    p.x+=p.vx;
+    p.y+=p.vy;
+    p.vy+=.12;
+    p.life-=.025;
+    if(p.life<=0) particles.splice(i,1);
+  }
+
+  // Overflow check
+  const danger=58;
+  const overflow=fruits.some(f=>!f.merging&&f.age>2&&f.y-f.r<danger&&Math.abs(f.vy)<35);
+
+  if(overflow&&fruits.length>4) {
+    over=true;
+    running=false;
+    musicStop();
+    sound('over');
+    $('panelTitle').textContent='GAME OVER';
+    $('panelText').textContent='Your score: '+score+' — Try again and make a Watermelon!';
+    $('playBtn').textContent='↻ PLAY AGAIN';
+    $('overlay').classList.remove('hidden');
+  }
+}
+
+function mergePair(a,b) {
+  const x=(a.x+b.x)/2;
+  const y=(a.y+b.y)/2;
+  const t=a.t;
+  burst(x,y,FRUITS[t].color);
+  updateScore(FRUITS[t].points);
+  sound('merge');
+
+  if(t===10) {
+    toast('🍉 WATERMELON!');
+  }
+
+  // Remove both fruits, then create the next level.
+  setTimeout(()=>{
+    fruits=fruits.filter(f=>f!==a&&f!==b);
+    if(t<FRUITS.length-1) {
+      const nf=addFruit(t+1,x,y);
+      nf.vx=(Math.random()-.5)*45;
+      nf.vy=-90;
+      if(t+1===10) {
+        toast('🍉 WATERMELON!');
+        sound('win');
+      }
+    }
+  },45);
+}
+
+function dropFruit() {
+  if(!running||over||dropLock) return;
+  dropLock=true;
+
+  const r=radius(current);
+  const x=Math.max(r+2,Math.min(W-r-2,aimX));
+  const f=addFruit(current,x,45);
+  f.vy=40;
+  f.vx=0;
+  sound('drop');
+
+  current=next;
+  next=randTier();
+  renderNext();
+
+  setTimeout(()=>dropLock=false,360);
+}
+
+function renderNext() {
+  nextCtx.clearRect(0,0,70,70);
+  nextCtx.save();
+  nextCtx.translate(35,35);
+  drawFruit(nextCtx,next,24);
+  nextCtx.restore();
+}
+
+function pointerX(e) {
+  const rect=canvas.getBoundingClientRect();
+  return e.clientX-rect.left;
+}
+
+canvas.addEventListener('pointerdown',e=>{
+  if(!running||over) return;
+  aiming=true;
+  aimX=Math.max(20,Math.min(W-20,pointerX(e)));
+  try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+  e.preventDefault();
+});
+
+canvas.addEventListener('pointermove',e=>{
+  if(!aiming||!running||over) return;
+  aimX=Math.max(20,Math.min(W-20,pointerX(e)));
+  e.preventDefault();
+});
+
+canvas.addEventListener('pointerup',e=>{
+  if(!aiming) return;
+  aiming=false;
+  aimX=Math.max(20,Math.min(W-20,pointerX(e)));
+  dropFruit();
+  e.preventDefault();
+});
+
+canvas.addEventListener('pointercancel',()=>{
+  aiming=false;
+});
+
+function resetGame() {
+  fruits=[];
+  particles=[];
+  score=0;
+  $('score').textContent='0';
+  current=randTier();
+  next=randTier();
+  over=false;
+  running=true;
+  dropLock=false;
+  renderNext();
+  $('overlay').classList.add('hidden');
+  $('panelTitle').textContent='FRUIT MERGE';
+  $('playBtn').textContent='▶ PLAY NOW';
+  musicStart();
+  toast('Ready? Drop your first fruit!');
+}
+
+$('playBtn').addEventListener('click',()=>{
+  resetGame();
+});
+
+$('restart').addEventListener('click',()=>{
+  resetGame();
+});
+
+$('settingsBtn').addEventListener('click',()=>{
+  $('overlay').classList.remove('hidden');
+  $('panelTitle').textContent='SETTINGS';
+  $('panelText').textContent='Choose your sound and music preferences.';
+  $('playBtn').textContent=running?'RESUME GAME':'▶ PLAY NOW';
+  $('settings').classList.remove('hidden');
+});
+
+$('openSettings').addEventListener('click',()=>{
+  $('settings').classList.toggle('hidden');
+});
+
+$('effectsToggle').addEventListener('click',()=>{
+  effectsOn=!effectsOn;
+  $('effectsToggle').textContent=effectsOn?'ON':'OFF';
+  $('soundBtn').textContent=effectsOn?'🔊 Sound ON':'🔇 Sound OFF';
+  if(effectsOn) sound('merge');
+});
+
+$('musicToggle').addEventListener('click',()=>{
+  musicOn=!musicOn;
+  $('musicToggle').textContent=musicOn?'ON':'OFF';
+  if(musicOn&&running) musicStart();
+  else musicStop();
+});
+
+$('soundBtn').addEventListener('click',()=>{
+  effectsOn=!effectsOn;
+  $('effectsToggle').textContent=effectsOn?'ON':'OFF';
+  $('soundBtn').textContent=effectsOn?'🔊 Sound ON':'🔇 Sound OFF';
+  if(effectsOn) sound('merge');
+});
+
+function frame(time) {
+  const elapsed=lastTime?Math.min((time-lastTime)/1000,.04):0;
+  lastTime=time;
+
+  if(running&&!over) {
+    // Substeps reduce tunnelling and improve fruit collision reliability.
+    const steps=Math.max(1,Math.ceil(elapsed/.008));
+    for(let i=0;i<steps;i++) update();
+  }
+
+  draw();
+  requestAnimationFrame(frame);
+}
+
+resize();
+drawShelf();
+renderNext();
+requestAnimationFrame(frame);
+
+})();
+</script>
+</body>
+</html>
